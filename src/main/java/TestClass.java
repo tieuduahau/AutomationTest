@@ -1,15 +1,19 @@
-import io.github.bonigarcia.wdm.WebDriverManager;
+import io.github.bonigarcia.wdm.managers.ChromeDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.Select;
-import org.testng.Assert;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.awt.*;
+import java.awt.event.InputEvent;
+import java.time.Duration;
 import java.util.List;
 
 public class TestClass {
@@ -18,161 +22,140 @@ public class TestClass {
     String expect = "123.1223";
     @BeforeMethod
     public void setup(){
-        WebDriverManager.chromedriver().setup();
+        //C:\Users\Admin\Desktop\chromedriver_win32
+//        System.setProperty("webdriver.chrome.driver", "C:\\Users\\Admin\\Desktop\\chromedriver_win32\\chromedriver.exe");
+
+//        ChromeOptions options = new ChromeOptions();
+        ChromeDriverManager.chromedriver().setup();
         chromeDriver = new ChromeDriver();
     }
 
     @Test
-    public void run(){
-        chromeDriver.get("https://www.google.com.vn/?hl=vi");
+    public void case1() throws AWTException {
+
+        chromeDriver.manage().window().maximize();
+
+        chromeDriver.get("https://app.asana.com/-/login");
+
+        chromeDriver.findElement(By.xpath("//*[@id=\"Login-appRoot\"]/div/div[1]/div[2]/form/div[1]/div/div/input")).sendKeys("haudtquicktest@gmail.com");
+        sleep(300);
+
+        chromeDriver.findElement(By.xpath("//*[@id=\"Login-appRoot\"]/div/div[1]/div[2]/form/div[2]")).click();
+        sleep(300);
+        WebDriverWait wait = new WebDriverWait(chromeDriver, Duration.ofSeconds(2));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("LoginPasswordForm-passwordInput"))).sendKeys("123456789a@");
+
+        sleep(300);
+        chromeDriver.findElement(By.xpath("//*[@id=\"Login-appRoot\"]/div/div[1]/form/div[2]")).click();
+        sleep(10000);
+        chromeDriver.findElement(By.className("TopbarPageHeaderGlobalActions-omnibuttonWithoutQuestionMenu")).click();
+        wait = new WebDriverWait(chromeDriver, Duration.ofSeconds(2));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Omnibutton-task")));
+        chromeDriver.findElement(By.id("Omnibutton-task")).click();
+        sleep(300);
+
+        WebElement element = chromeDriver.switchTo().activeElement();
+        element.sendKeys("Demo");
+        sleep(1000);
+        element = chromeDriver.findElement(By.xpath("//*[@id=\"asana_main_page\"]/div[2]/div/div/div[2]/div/div[1]/div[1]/div/div/div[3]/div[2]"));
+        element.sendKeys("tieu dua hau test description");
+        sleep(2000);
+        element = chromeDriver.findElement(By.xpath("//*[@id=\"asana_main_page\"]/div[2]/div/div/div[2]/div/div[1]/div[1]/div/div/div[2]/div[2]"));
+        sleep(2000);
+        element.click();//open dropdown list
+        sleep(2000);
+        //select Hau Test Project
+        List <WebElement> elements = chromeDriver.findElements(By.className("TypeaheadItemStructure-label"));
+        for (int i = 0; i < elements.size(); i++){
+            if (elements.get(i).getText().equals("Sample Project")){
+                sleep(2000);
+                new Actions(chromeDriver).moveToElement(wait.until(ExpectedConditions.elementToBeClickable(elements.get(i)))).click().build().perform();
+
+                break;
+            }
+        }
         sleep(5000);
-        chromeDriver.navigate().refresh();
-        chromeDriver.navigate().back();
-        chromeDriver.navigate().forward();
+        //Priority
+        chromeDriver.findElement(By.className("CustomPropertyEnumValueInput")).click();
+        elements = chromeDriver.findElements(By.className("MenuItem-label"));
+        for (int i = 0; i < elements.size(); i++){
+            if (elements.get(i).getText().equals("Medium")){
+                sleep(1000);
+                new Actions(chromeDriver).moveToElement(wait.until(ExpectedConditions.elementToBeClickable(elements.get(i)))).click().build().perform();
+            break;
+            }
+        }
 
-        chromeDriver.executeScript("", new Object()); //thực thi javascript
+        //create task
+        sleep(200);
+        chromeDriver.findElement(By.className("QuickAddTaskToolbar-createButton")).click();
+        sleep(2000);
 
-        chromeDriver.getMouse(); //get con trỏ chuột
-
-        chromeDriver.getPageSource(); //get source code html
-
-        chromeDriver.getTitle(); //get ra tiêu đề của trang
-
-        chromeDriver.switchTo().alert();//di chuyển đến 1 phần tử trên trang web, ví dụ như
-        //alert, frame, new windows
-    }
-
-    @Test
-    public void lesson7(){
-        chromeDriver.get("https://auto.fresher.dev/lessons/lession7/index.html");
-
-        WebElement button1 = chromeDriver.findElement(By.id("btnExample1"));
-        button1.click();
-        sleep(3000);
-        List<WebElement> btnList = chromeDriver.findElements(By.className("btn-success"));
-        btnList.forEach(btn -> {
-            btn.click();
-            sleep(2000);
-        });
-    }
-
-    @Test
-    public void lesson8_1(){
-        chromeDriver.get("https://auto.fresher.dev/lessons/lession7/index.html");
-        sleep(3000);
-        //web element only support some method, u must use Actions object of element to use other action
-        WebElement button1 = chromeDriver.findElement(By.id("btnExample1"));
-
-        button1.sendKeys( "test");
-        button1.click();
-        //del value in text box
-        button1.clear();
-
-        button1.submit();
-
-        Actions actions = new Actions(chromeDriver);
-
-        //move to element
-        actions.moveToElement(button1);
-
-        //left click
-        actions.click(button1).build().perform();
-
-        //right click
-        actions.contextClick(button1).build().perform();
-
-        //double click
-        actions.doubleClick(button1).build().perform();
-
-        //drag drop
-        actions.dragAndDrop(button1, button1).build().perform();
-
-        //************* all element can send key ****************
-        actions.sendKeys(button1, "abc").build().perform();
+        //case 2
+        case2();
+        //case 3
+        case3();
 
     }
 
-    @Test
-    public void lesson8_2(){
-        chromeDriver.get("https://auto.fresher.dev/lessons/lession7/index.html");
-        sleep(3000);
-        //web element only support some method, u must use Actions object of element to use other action
-        WebElement button1 = chromeDriver.findElement(By.id("btnExample1"));
-        button1.click();
-        WebElement lbStatusButton = chromeDriver.findElement(By.id("lbStatusButton"));
-        String lbStatusButtonValue = lbStatusButton.getText();
-        Assert.assertEquals(lbStatusButtonValue, "Click on Button 1");
+    void case2() throws AWTException {
+        chromeDriver.findElement(By.xpath("//*[@id=\"asana_sidebar\"]/div/nav/a[2]")).click();
+        sleep(2000);
 
-        WebElement input1 = chromeDriver.findElement(By.id("txtInput1"));
-        String inputValue = input1.getAttribute("value");
-        Assert.assertEquals(inputValue, "Default value of input");
-
-        String newValue = "New value of input";
-
-        input1.clear();
-        input1.sendKeys(newValue);
-        String newInputValue = input1.getAttribute("value");
-        Assert.assertEquals(newInputValue, newValue);
-    }
-
-    @Test
-    public void lesson9_1(){
-        chromeDriver.get("https://auto.fresher.dev/lessons/lession7/index.html");
+        WebElement elementForDrag = chromeDriver.findElement(By.xpath("//*[@id=\"asana_main_page\"]/div[2]/div/div/div/div/div[1]/div[1]/div[3]/div/div/div/div/div/div[1]/div/div/div[2]/div[2]/div/div/div[2]"));
         sleep(1000);
-        WebElement element = chromeDriver.findElement(By.id("txtInput2"));
+        removeAttribute(elementForDrag, "draggable");
+        enableElement(elementForDrag, "draggable");
+        WebElement targetElement = chromeDriver.findElement(By.xpath("//*[@id=\"asana_main_page\"]/div[2]/div/div/div/div/div[1]/div[1]/div[3]/div/div/div/div/div/div[3]/div/div/div[2]"));
 
-        removeAttribute(element, "disabled");
-        element.clear();
-        element.sendKeys("abcxyz");
-        setAttribute(element, "disabled");
+        removeAttribute(targetElement, "droppable");
+        enableElement(targetElement, "droppable");
+
+        System.out.println(elementForDrag.getText());
+        System.out.println(targetElement.getText());
+        Point coordinates = elementForDrag.getLocation();
+        Point coordinatesa = targetElement.getLocation();
+        Robot robot = new Robot();
+        robot.mouseMove(coordinates.getX(), coordinates.getY() + 120);
+        robot.mousePress(InputEvent.BUTTON1_MASK);
+        robot.mouseMove(coordinatesa.getX() + 100, coordinatesa.getY() + 130);
+        sleep(500);
+        robot.mouseMove(coordinatesa.getX() + 80, coordinatesa.getY() + 130);
+        robot.delay(2000);
+        robot.mouseRelease(InputEvent.BUTTON1_MASK);
     }
+    void case3(){
+        chromeDriver.findElement(By.xpath("//*[@id=\"asana_sidebar\"]/div/nav/a[2]")).click();
+        sleep(5000);
+        WebElement element = chromeDriver.findElement(By.xpath("//*[@id=\"asana_main_page\"]/div[2]/div/div/div/div/div[1]/div[1]/div[3]/div/div/div/div/div/div[1]/div/div/div[2]/div[2]/div/div/div[1]"));
+        element.click();
+        sleep(5000);
 
-    @Test
-    public void lesson9_2(){
-        chromeDriver.get("https://auto.fresher.dev/lessons/lession7/index.html");
+        WebDriverWait wait = new WebDriverWait(chromeDriver, Duration.ofSeconds(2));
+        WebElement createBtn = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("SubtaskIcon")));
+        sleep(300);
+        createBtn.click();
+        element = chromeDriver.switchTo().activeElement();
+        element.sendKeys("This is sub task");
         sleep(1000);
-        WebElement element = chromeDriver.findElement(By.id("txtInput3"));
-        sendText(element, input);
-        sleep(100);
-        String actual = getValue(element);
-        Assert.assertEquals(actual, expect);
-    }
-
-    @Test
-    public void lesson10(){
-        chromeDriver.get("https://auto.fresher.dev/lessons/lession7/index.html");
+        //click on comment icon
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("CommentLineIcon"))).click();
         sleep(1000);
-        WebElement element = chromeDriver.findElement(By.id("exampleSelect1"));
-        Select select = new Select(element);
-        select.selectByVisibleText("Option 4");
-        select.selectByValue("value3");
-        select.selectByIndex(1);
+        //click on text comment area
+        element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("SingleTaskPaneSpreadsheet-commentComposer")));
+        element.click();
 
-        String valueByElement = getValue(element);
-        System.out.println("get value by select element" + valueByElement);
+        element = chromeDriver.switchTo().activeElement();
+        element.sendKeys("This is comment");
 
-        WebElement selectedOption = select.getFirstSelectedOption();
-        String value = this.getValue(selectedOption);
-        String text = this.getText(selectedOption);
-        System.out.println("get value by option element "+ value + " --- " + text);
-    }
+        //Comment button
+        element = chromeDriver.findElement(By.className("CommentComposerEditor-submitButton"));
+        element.click();
 
-    @Test
-    public void lesson10_2(){
-        chromeDriver.get("https://auto.fresher.dev/lessons/lession7/index.html");
         sleep(1000);
-        WebElement element = chromeDriver.findElement(By.id("defaultCheck1"));
-        boolean ischecked = element.isSelected();
-    }
+        element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id=\"asana_main_page\"]/div[2]/div/div/div/div/div[2]/article/div[2]/div[1]/div/div/div[6]/div/div[3]/div/div[1]/div[2]/div[1]/div[2]/div")));
 
-    @Test
-    public void lesson10_3(){
-        chromeDriver.get("https://auto.fresher.dev/lessons/lession7/index.html");
-        sleep(1000);
-        WebElement radioChecked = getCheckedElement("exampleRadios");
-        System.out.println(getValue(radioChecked));
-
-
+        element.click();
     }
 
     @AfterMethod
@@ -196,6 +179,11 @@ public class TestClass {
     private void setAttribute(WebElement element, String attribute){
         ((JavascriptExecutor) chromeDriver).executeScript("arguments[0].setAttribute('" + attribute + "', '')", element);
     }
+
+    private void enableElement(WebElement element, String attribute){
+        ((JavascriptExecutor) chromeDriver).executeScript("arguments[0].setAttribute('" + attribute + "', 'true')", element);
+    }
+
 
     private String getValue(WebElement element){
         return element.getAttribute("value");
