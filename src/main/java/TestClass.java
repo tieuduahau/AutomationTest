@@ -4,6 +4,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.Select;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -13,6 +14,8 @@ import java.util.List;
 
 public class TestClass {
     ChromeDriver chromeDriver;
+    String input = "abc123.12.23!@#";
+    String expect = "123.1223";
     @BeforeMethod
     public void setup(){
         WebDriverManager.chromedriver().setup();
@@ -113,10 +116,62 @@ public class TestClass {
     }
 
     @Test
-    public void lesson9(){
+    public void lesson9_1(){
         chromeDriver.get("https://auto.fresher.dev/lessons/lession7/index.html");
-        sleep(3000);
+        sleep(1000);
         WebElement element = chromeDriver.findElement(By.id("txtInput2"));
+
+        removeAttribute(element, "disabled");
+        element.clear();
+        element.sendKeys("abcxyz");
+        setAttribute(element, "disabled");
+    }
+
+    @Test
+    public void lesson9_2(){
+        chromeDriver.get("https://auto.fresher.dev/lessons/lession7/index.html");
+        sleep(1000);
+        WebElement element = chromeDriver.findElement(By.id("txtInput3"));
+        sendText(element, input);
+        sleep(100);
+        String actual = getValue(element);
+        Assert.assertEquals(actual, expect);
+    }
+
+    @Test
+    public void lesson10(){
+        chromeDriver.get("https://auto.fresher.dev/lessons/lession7/index.html");
+        sleep(1000);
+        WebElement element = chromeDriver.findElement(By.id("exampleSelect1"));
+        Select select = new Select(element);
+        select.selectByVisibleText("Option 4");
+        select.selectByValue("value3");
+        select.selectByIndex(1);
+
+        String valueByElement = getValue(element);
+        System.out.println("get value by select element" + valueByElement);
+
+        WebElement selectedOption = select.getFirstSelectedOption();
+        String value = this.getValue(selectedOption);
+        String text = this.getText(selectedOption);
+        System.out.println("get value by option element "+ value + " --- " + text);
+    }
+
+    @Test
+    public void lesson10_2(){
+        chromeDriver.get("https://auto.fresher.dev/lessons/lession7/index.html");
+        sleep(1000);
+        WebElement element = chromeDriver.findElement(By.id("defaultCheck1"));
+        boolean ischecked = element.isSelected();
+    }
+
+    @Test
+    public void lesson10_3(){
+        chromeDriver.get("https://auto.fresher.dev/lessons/lession7/index.html");
+        sleep(1000);
+        WebElement radioChecked = getCheckedElement("exampleRadios");
+        System.out.println(getValue(radioChecked));
+
 
     }
 
@@ -135,7 +190,42 @@ public class TestClass {
     }
 
     private void removeAttribute(WebElement element, String attribute){
-        ((JavascriptExecutor) chromeDriver).executeScript("arguments[0].removeAtrribute('" + attribute + "')", element);
+        ((JavascriptExecutor) chromeDriver).executeScript("arguments[0].removeAttribute('" + attribute + "')", element);
     }
 
+    private void setAttribute(WebElement element, String attribute){
+        ((JavascriptExecutor) chromeDriver).executeScript("arguments[0].setAttribute('" + attribute + "', '')", element);
+    }
+
+    private String getValue(WebElement element){
+        return element.getAttribute("value");
+    }
+
+    private String getText(WebElement element){
+        return element.getText();
+    }
+
+    private void sendText(WebElement element, String str){
+        element.clear();
+        sleep(100);
+        element.sendKeys(input);
+        sleep(100);
+    }
+
+    private void setCheckboxState(WebElement element, boolean expectCheck){
+        boolean currentStatus = element.isSelected();
+        if (expectCheck != currentStatus){
+            element.click();
+        }
+    }
+
+    private WebElement getCheckedElement(String groupName){
+        List<WebElement> webElementList = chromeDriver.findElements(By.name(groupName));
+        for (int i = 0; i < webElementList.size(); i++){
+            if (webElementList.get(i).isSelected()){
+                return webElementList.get(i);
+            }
+        }
+        return null;
+    }
 }
